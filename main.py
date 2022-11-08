@@ -1,7 +1,23 @@
-import random, pyperclip
+import random, pyperclip, json
 from tkinter import *
 from tkinter import messagebox
 
+# ---------------------------- SEARCH ENTRIES ------------------------------- #
+def search():
+    web = website_input.get()
+    e = "email"
+    p = "password"
+    try:
+        with open('passwords.json', 'r') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        print("You have to add a website first!")
+    else:
+        if data.get(web):
+            messagebox.showinfo(title=web, message=f"Email: {data[web][e]}\nPassword: {data[web][p]}\n")
+        else:
+            messagebox.showinfo(title=web, message="Website not found")
+        
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 
@@ -30,18 +46,31 @@ def add_password():
     web = website_input.get()
     p = password_input.get()
 
+    data_dict = { web: {"email":em,"password":p} }
+
     if len(em) <1 or len(web) <1 or len(p) < 1:
         messagebox.showwarning(title="Oops", message="You left some fields empty")
     else:
         is_ok = messagebox.askokcancel(title="save", message=f"These are the credentials, do you wanna continue?\nEmail: {em}\nWebsite: {web}\nPassword: {p}")
 
         if is_ok:
-            with open('passwords.txt', 'a') as f:
-                f.write(web + "  |  " + em + "  |  " + p + "\n")
 
-            password_input.delete(0, 'end')
-            website_input.delete(0, 'end')
-            email_input.delete(0, 'end')
+            try:
+                with open('passwords.json', 'r') as f:
+                        data = json.load(f)
+                        
+            except FileNotFoundError:
+                with(open('passwords.json', 'w')) as f:
+                    json.dump(data_dict, f, indent=4)
+            else:
+                data.update(data_dict)
+
+                with open('passwords.json', 'w') as f:
+                    json.dump(data, f, indent=4)   
+            finally:           
+                password_input.delete(0, 'end')
+                website_input.delete(0, 'end')
+                email_input.delete(0, 'end')
 
 # ---------------------------- UI SETUP ------------------------------- #
 window = Tk()
@@ -58,9 +87,12 @@ canvas.grid(row=0, column=1)
 # website label and entry
 website = Label(text="Website: ")
 website.grid(row=1, column=0)
-website_input = Entry(width=40)
-website_input.grid(row=1, column=1, columnspan=2)
+website_input = Entry(width=20)
+website_input.grid(row=1, column=1, columnspan=1)
 website_input.focus()
+# search button
+search = Button(text="Search", width=15, command=search)
+search.grid(row=1, column=2, columnspan=2)
 
 # email label and entry
 email = Label(text="Email/Username: ")
