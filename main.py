@@ -11,7 +11,7 @@ def search():
         with open('passwords.json', 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print("You have to add a website first!")
+        messagebox.showerror(title="Error", message="No Data File Found")
     else:
         if data.get(web):
             messagebox.showinfo(title=web, message=f"Email: {data[web][e]}\nPassword: {data[web][p]}\n")
